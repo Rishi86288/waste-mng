@@ -108,7 +108,7 @@ export default function LiveScanPage() {
         </div>
       </div>
 
-      {/* नया: एरर मैसेज डिस्प्ले (अगर कुछ भी फेल होता है तो यहाँ दिखेगा) */}
+      {/* नया: एरर मैसेज डिस्प्ले (अगर कुछ भी फेल होता है तो यहाँ दिखेगा  ) */}
       {errorMsg && (
         <div className="mt-4 w-full p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm font-semibold">
           ⚠️ {errorMsg}
@@ -117,7 +117,7 @@ export default function LiveScanPage() {
 
       {/* रियल-टाइम डिटेक्शन रिजल्ट */}
       <div className="mt-4 w-full p-5 bg-white border-2 border-green-200 rounded-2xl shadow-xl transition-all duration-300">
-        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Live Analysis Result</h2>
+        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Live  Analysis Result</h2>
         
         {prediction ? (
           <div className="animate-in fade-in duration-300">
