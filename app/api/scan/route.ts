@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
+import { getRequestContext } from "@cloudflare/next-on-pages";
 
-// Cloudflare Workers / D1 के लिए Edge Runtime अनिवार्य है
 export const runtime = 'edge';
 
 export async function POST(request: Request) {
@@ -11,10 +11,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "इमेज प्राप्त नहीं हुई।" }, { status: 400 });
     }
 
-    const MODEL_ID = process.env.ROBOFLOW_MODEL_ID;
-    const API_KEY = process.env.ROBOFLOW_API_KEY;
+    // Cloudflare Pages के सर्वर से API Key और Database (D1) निकालने का सही तरीका
+    let env: any = {};
+    try {
+      env = getRequestContext().env;
+    } catch (e) {
+      env = process.env; // लोकल टेस्टिंग के लिए फॉलबैक
+    }
 
-    // रोबोफ्लो API कॉल
+    const MODEL_ID = env.ROBOFLOW_MODEL_ID || process.env.ROBOFLOW_MODEL_ID;
+    const API_KEY = env.ROBOFLOW_API_KEY || process.env.ROBOFLOW_API_KEY;
+
+    // अगर Cloudflare पर की (Key) नहीं मिली, तो 500 की जगह प्रॉपर एरर मैसेज भेजें
+    if (!MODEL_ID || !API_KEY) {
+      return NextResponse.json(
+        { success: false, error: "Cloudflare डैशबोर्ड में API Key सेट नहीं है! कृपया Settings > Environment variables चेक करें।" }, 
+        { status: 500 }
+      );
+    }
+
+    // Roboflow API कॉल
     const aiResponse = await fetch(
       `https://detect.roboflow.com/${MODEL_ID}/1?api_key=${API_KEY}`,
       {
@@ -25,17 +41,17 @@ export async function POST(request: Request) {
     );
 
     if (!aiResponse.ok) {
-      throw new Error(`Roboflow API error: ${aiResponse.statusText}`);
+      return NextResponse.json(
+        { success: false, error: `Roboflow API क्रैश हो गई। (Status: ${aiResponse.status})` }, 
+        { status: 500 }
+      );
     }
 
     const aiData = await aiResponse.json();
     const topPrediction = aiData.predictions?.[0];
 
     if (!topPrediction) {
-      return NextResponse.json({
-        success: false,
-        message: "कचरे की स्पष्ट पहचान नहीं हो सकी।",
-      });
+      return NextResponse.json({ success: false, message: "कचरे की स्पष्ट पहचान नहीं हो सकी।" }, { status: 200 });
     }
 
     const category = topPrediction.class;
@@ -46,26 +62,22 @@ export async function POST(request: Request) {
     const lowerCategory = category.toLowerCase();
 
     if (lowerCategory.includes("compost") || lowerCategory.includes("organic")) {
-      instruction = "यह कम्पोस्टेबल (गीला) कचरा है। खाद केंद्र पर भेजें।";
-      points = 15;
+      instruction = "यह गीला कचरा है। खाद केंद्र पर भेजें।"; points = 15;
     } else if (lowerCategory.includes("hazard")) {
-      instruction = "यह खतरनाक कचरा है! विशेष सावधानी बरतें।";
-      points = 25;
+      instruction = "यह खतरनाक कचरा है! विशेष सावधानी बरतें।"; points = 25;
     } else if (lowerCategory.includes("e-waste") || lowerCategory.includes("electronic")) {
-      instruction = "यह ई-वेस्ट है। अधिकृत कलेक्शन सेंटर पर दें।";
-      points = 30;
+      instruction = "यह ई-वेस्ट है। कलेक्शन सेंटर पर दें।"; points = 30;
     }
 
     // Cloudflare D1 Database Operations
-    const db = (process.env as any).DB;
+    const db = env.DB;
     if (db) {
-      const activeUserId = userId || "Rishi_Raj"; // Default User ID
+      const activeUserId = userId || "Rishi_Raj"; // तुम्हारी प्रोफाइल के अनुसार 
       
       await db.prepare(
         `INSERT INTO scan_history (user_id, waste_category, confidence_score, points_awarded) VALUES (?, ?, ?, ?)`
       ).bind(activeUserId, category, confidence, points).run();
 
-      // अगर यूजर नहीं है, तो इग्नोर करेगा, अन्यथा अपडेट करेगा
       await db.prepare(
         `UPDATE users SET green_points = green_points + ? WHERE id = ?`
       ).bind(points, activeUserId).run();
@@ -79,8 +91,8 @@ export async function POST(request: Request) {
       pointsAwarded: points,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Scan API Error:", error);
-    return NextResponse.json({ success: false, error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ success: false, error: `सर्वर एरर: ${error.message}` }, { status: 500 });
   }
 }
