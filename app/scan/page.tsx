@@ -1,94 +1,127 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
-export default function ScanPage() {
+export default function LiveScanPage() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [scanning, setScanning] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [prediction, setPrediction] = useState<any>(null);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  
+  // State की जगह Ref का उपयोग ताकि setInterval लैग न करे
+  const isScanningRef = useRef(false);
 
-  // 1. यूजर से कैमरा परमिशन लेने का कोड
   useEffect(() => {
-    async function getCameraPermission() {
+    async function initCamera() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: "environment" } // पिछला कैमरा चालू करने के लिए
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment", width: { ideal: 640 }, height: { ideal: 480 } }
         });
+        mediaStreamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
         setHasPermission(true);
-      } catch (error) {
-        console.error("Camera permission denied:", error);
+      } catch (err) {
+        console.error("Camera permission error:", err);
         setHasPermission(false);
       }
     }
-    getCameraPermission();
+    initCamera();
+
+    return () => {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
   }, []);
 
-  // 2. फोटो कैप्चर करके AI API पर भेजने का फंक्शन
-  const captureAndScan = async () => {
-    if (!videoRef.current || !canvasRef.current) return;
-    setScanning(true);
+  // Optimized Continuous Detection Loop
+  useEffect(() => {
+    if (!hasPermission) return;
 
-    const canvas = canvasRef.current;
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-      const base64Image = canvas.toDataURL("image/jpeg");
+    const intervalId = setInterval(async () => {
+      // अगर पहले से स्कैन चल रहा है, तो नया रिक्वेस्ट नहीं भेजेगा
+      if (!videoRef.current || !canvasRef.current || isScanningRef.current) return;
+      
+      isScanningRef.current = true;
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext("2d");
 
-      // Next.js API रूट पर इमेज भेजना
-      try {
-        const response = await fetch("/api/scan", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64Image, userId: "user_123" }),
-        });
-        const data = await response.json();
-        setResult(data);
-      } catch (err) {
-        console.error("Scan failed", err);
-      } finally {
-        setScanning(false);
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const base64Image = canvas.toDataURL("image/jpeg", 0.7); // Performance optimization
+
+        try {
+          const res = await fetch("/api/scan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: base64Image, userId: "Rishi_Raj" }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            setPrediction(data);
+          }
+        } catch (e) {
+          console.error("Frame inference error:", e);
+        }
       }
-    }
-  };
+      isScanningRef.current = false;
+    }, 2500); // 2.5 सेकंड का ऑप्टिमाइज्ड डिले
+
+    return () => clearInterval(intervalId);
+  }, [hasPermission]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50">
-      <h1 className="text-2xl font-bold mb-4">AI Waste Scanner</h1>
+    <div className="flex flex-col items-center p-4 max-w-md mx-auto min-h-screen bg-gray-50">
+      <h1 className="text-xl font-bold mb-4 text-green-800 tracking-wide">🤖 AI Live Scanner</h1>
 
       {hasPermission === false && (
-        <p className="text-red-500">कृपया अपने ब्राउज़र सेटिंग्स से कैमरा की परमिशन दें।</p>
+        <p className="text-red-500 text-sm mb-3 bg-red-50 p-3 rounded-lg border border-red-200">
+          कैमरा की अनुमति (Permission) दें।
+        </p>
       )}
 
       {/* लाइव कैमरा व्यू */}
-      <div className="relative w-full max-w-md bg-black rounded-lg overflow-hidden shadow-lg">
-        <video ref={videoRef} autoPlay playsInline className="w-full h-80 object-cover" />
+      <div className="relative w-full bg-black rounded-2xl overflow-hidden shadow-2xl border-4 border-gray-800">
+        <video ref={videoRef} autoPlay playsInline muted className="w-full h-80 object-cover" />
         <canvas ref={canvasRef} className="hidden" />
+        <div className="absolute top-3 right-3 flex items-center gap-2 bg-black/70 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm">
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+          Live AI Active
+        </div>
       </div>
 
-      <button
-        onClick={captureAndScan}
-        disabled={scanning || !hasPermission}
-        className="mt-6 px-6 py-3 bg-green-600 text-white font-semibold rounded-full shadow-md hover:bg-green-700 disabled:bg-gray-400"
-      >
-        {scanning ? "एनालिसिस हो रहा है..." : "कचरा स्कैन करें 📸"}
-      </button>
-
-      {/* AI रिजल्ट और रीसाइक्लिंग गाइडेंस */}
-      {result && (
-        <div className="mt-6 w-full max-w-md p-4 bg-white border border-green-200 rounded-lg shadow-sm">
-          <h2 className="text-lg font-bold text-green-700">पहचान परिणाम:</h2>
-          <p><strong>श्रेणी (Category):</strong> {result.category}</p>
-          <p><strong>सटीकता (Confidence):</strong> {(result.confidence * 100).toFixed(1)}%</p>
-          <p className="mt-2 text-sm text-blue-600 font-medium">सुझाव: {result.disposalInstruction}</p>
-          <p className="mt-1 text-xs text-green-600 font-bold">+ {result.pointsAwarded} ग्रीन पॉइंट्स जोड़े गए!</p>
-        </div>
-      )}
+      {/* रियल-टाइम डिटेक्शन रिजल्ट */}
+      <div className="mt-6 w-full p-5 bg-white border-2 border-green-200 rounded-2xl shadow-xl transition-all duration-300">
+        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Live Analysis Result</h2>
+        {prediction ? (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex justify-between items-center border-b pb-3 mb-3">
+              <span className="text-2xl font-extrabold text-gray-800 capitalize">{prediction.category}</span>
+              <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-black rounded-lg">
+                {(prediction.confidence * 100).toFixed(0)}%
+              </span>
+            </div>
+            <p className="text-sm text-blue-800 font-semibold bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+              💡 {prediction.disposalInstruction}
+            </p>
+            <div className="mt-3 flex items-center text-sm font-bold text-emerald-600 bg-emerald-50 p-2 rounded-lg">
+              <span className="mr-2">🌟</span> +{prediction.pointsAwarded} Green Points Added
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-6 opacity-60">
+            <div className="w-8 h-8 border-4 border-gray-300 border-t-green-500 rounded-full animate-spin mb-3"></div>
+            <p className="text-gray-500 text-sm font-medium">Scanning for waste object...</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
