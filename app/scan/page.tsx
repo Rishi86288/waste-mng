@@ -7,7 +7,7 @@ export default function LiveScanPage() {
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+ const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -18,38 +18,55 @@ export default function LiveScanPage() {
     const reader = new FileReader();
     reader.readAsDataURL(file);
 
-    reader.onloadend = async () => {
-      const base64Image = reader.result as string;
-      setImagePreview(base64Image); // इमेज का प्रीव्यू दिखाने के लिए
+    reader.onloadend = () => {
+      const img = new Image();
+      img.src = reader.result as string;
 
-      try {
-        const res = await fetch("/api/scan", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: base64Image, userId: "Rishi_Raj" }),
-        });
+      img.onload = async () => {
+        // --- नया फिक्स: इमेज का साइज छोटा करना ताकि सर्वर क्रैश न हो ---
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 640; // API के लिए सुरक्षित साइज
+        const scaleSize = MAX_WIDTH / img.width;
+        canvas.width = MAX_WIDTH;
+        canvas.height = img.height * scaleSize;
 
-        // अगर API 500 या 404 मारती है (आपके ओरिजिनल कोड का लॉजिक)
-        if (!res.ok) {
-          setErrorMsg(`सर्वर एरर: ${res.status} - API कनेक्ट नहीं हो पा रही है।`);
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // 60% क्वालिटी से पेलोड छोटा करना (जैसे आपके पुराने कोड में था)
+        const base64Image = canvas.toDataURL("image/jpeg", 0.6);
+        setImagePreview(base64Image); 
+
+        try {
+          const res = await fetch("/api/scan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: base64Image, userId: "Rishi_Raj" }),
+          });
+
+          // पहले बैकएंड का रिस्पॉन्स पढ़ेंगे ताकि असली एरर पता चले
+          const data = await res.json(); 
+
+          if (!res.ok) {
+            // अगर बैकएंड 500 मारता है, तो असली वजह स्क्रीन पर दिखेगी
+            setErrorMsg(`बैकएंड एरर: ${data.error || data.message || "सर्वर क्रैश हो गया"}`);
+            setIsScanning(false);
+            return;
+          }
+
+          if (data.success) {
+            setPrediction(data);
+            setErrorMsg(null);
+          } else {
+            setErrorMsg(data.message || "डिटेक्शन फेल हो गया।");
+          }
+        } catch (e: any) {
+          console.error("Network error:", e);
+          setErrorMsg(`नेटवर्क एरर: बैकएंड से कनेक्ट नहीं हो पाया। (${e.message})`);
+        } finally {
           setIsScanning(false);
-          return;
         }
-
-        const data = await res.json();
-
-        if (data.success) {
-          setPrediction(data);
-          setErrorMsg(null); // सफलता पर एरर हटा दो
-        } else {
-          setErrorMsg(data.message || "डिटेक्शन फेल हो गया।");
-        }
-      } catch (e: any) {
-        console.error("Network error:", e);
-        setErrorMsg(`नेटवर्क एरर: बैकएंड से कनेक्ट नहीं हो पाया। (${e.message})`);
-      } finally {
-        setIsScanning(false);
-      }
+      };
     };
   };
 
