@@ -1,0 +1,164 @@
+For your 14,000-image YOLO11 project, here's the complete workflow from preparing your dataset to downloading the trained model using Google Colab Free.
+Step 1: Create a Google Account
+If you don't already have one:
+Go to https://accounts.google.com⁠�
+Create a Google account.
+Sign in.
+Step 2: Open Google Colab
+Visit https://colab.research.google.com⁠�
+Click New Notebook.
+A notebook will open with a blank code cell.
+Step 3: Enable GPU
+Click Runtime at the top.
+Click Change runtime type.
+Set:
+Hardware accelerator: GPU
+Click Save.
+Step 4: Check the GPU
+In the first code cell, enter:
+!nvidia-smi
+Click the ▶️ button to run it.
+If you see details of an NVIDIA GPU (such as T4 or L4), you're ready.
+Step 5: Install YOLO11
+In a new code cell:
+!pip install ultralytics
+Wait until the installation finishes.
+Step 6: Connect Google Drive
+Create another code cell:
+from google.colab import drive
+drive.mount('/content/drive')
+Run it.
+A link will appear:
+Click the link.
+Choose your Google account.
+Allow access.
+Copy the authorization code.
+Paste it into Colab.
+Your Google Drive is now connected.
+Step 7: Prepare Your Dataset
+Your dataset must already be in YOLO format.
+It should look like this:
+dataset
+│
+├── data.yaml
+│
+├── train
+│      ├── images
+│      └── labels
+│
+├── valid
+│      ├── images
+│      └── labels
+│
+└── test
+       ├── images
+       └── labels
+The important files are:
+images (.jpg/.png)
+labels (.txt)
+data.yaml
+Step 8: Compress the Dataset
+Right-click the dataset folder.
+Create
+dataset.zip
+Step 9: Upload to Google Drive
+Create a folder:
+My Drive
+   └── YOLO
+Upload
+dataset.zip
+inside that folder.
+Step 10: Extract the Dataset
+Create another code cell:
+!unzip "/content/drive/MyDrive/YOLO/dataset.zip" -d /content/
+Wait until extraction finishes.
+Step 11: Check the Dataset
+Run
+!ls /content/dataset
+You should see
+data.yaml
+train
+valid
+test
+Step 12: Import YOLO
+from ultralytics import YOLO
+Step 13: Download YOLO11
+For Nano:
+model = YOLO("yolo11n.pt")
+Or Small:
+model = YOLO("yolo11s.pt")
+Colab downloads the model automatically.
+Step 14: Start Training
+Run
+model.train(
+    data="/content/dataset/data.yaml",
+    epochs=100,
+    imgsz=640,
+    batch=16
+)
+Explanation:   /content/data.yaml
+data → your dataset
+epochs=100 → train 100 times
+imgsz=640 → image size
+batch=16 → images processed together
+Step 15: Wait
+Training begins.
+You will see
+Epoch 1/100
+Epoch 2/100
+Epoch 3/100
+...
+along with loss and accuracy values.
+Step 16: Training Completes
+After the final epoch, Colab creates
+runs
+   detect
+      train
+          weights
+Inside you'll find:
+best.pt
+last.pt
+best.pt is the model you'll use.
+Step 17: Save the Model to Drive
+Run:
+!cp -r runs /content/drive/MyDrive/YOLO/
+This copies all training results to your Google Drive.
+Step 18: Download the Model
+Open Google Drive:
+YOLO
+   runs
+      detect
+         train
+            weights
+Download
+best.pt
+to your computer.
+Step 19: If Colab Disconnects
+Google Colab Free sessions end after several hours.
+To continue:
+Open Colab again.
+Mount Google Drive.
+Install Ultralytics.
+Load the last checkpoint:
+from ultralytics import YOLO
+
+model = YOLO("/content/drive/MyDrive/YOLO/runs/detect/train/weights/last.pt")
+
+model.train(resume=True)
+Training resumes instead of starting over.
+Recommended Settings for Your 14,000-Image Dataset
+model.train(
+    data="/content/dataset/data.yaml",
+    epochs=100,
+    imgsz=640,
+    batch=16,
+    workers=2,
+    cache=False
+)
+If you encounter an out-of-memory error, reduce the batch size to 8 or 4.
+A note about training 14,000 images on Colab Free
+A dataset of this size is unlikely to finish in a single free Colab session. Expect to:
+Save checkpoints (last.pt) to Google Drive.
+Resume training across multiple sessions.
+Be patient, as free GPU availability and runtime limits vary.
+If you'd like, I can also provide a single Colab notebook with all the code cells already organized so you can run them one by one without needing to write any code yourself.

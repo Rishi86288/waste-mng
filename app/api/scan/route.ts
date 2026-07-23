@@ -11,8 +11,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "इमेज प्राप्त नहीं हुई।" }, { status: 400 });
     }
 
-    // 1. Base64 स्ट्रिंग को क्लीन करना (Roboflow को 'data:image/jpeg;base64,' वाला हिस्सा नहीं चाहिए होता है)
-    const base64Data = image.replace(/^data:image\/(png|jpeg|jpg);base64,/, "");
+    // 1. Base64 स्ट्रिंग को क्लीन करना (थोड़ा बेहतर किया है ताकि webp/jpeg सब चले)
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
 
     // 2. Cloudflare से Environment Variables निकालना
     let env: any = {};
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       env = process.env; 
     }
 
-    // तुम्हारी असली API Key (अगर Cloudflare डैशबोर्ड में नहीं मिली, तो डायरेक्ट इस्तेमाल करेगा)
+    // तुम्हारी असली API Key
     const API_KEY = env.ROBOFLOW_API_KEY || "7ruKhCMAmFFJhFkWVulk"; 
     
     // तुम्हारा वर्कफ़्लो URL
@@ -37,7 +37,6 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         api_key: API_KEY,
         inputs: {
-          // 'url' की जगह 'base64' इस्तेमाल करना होगा क्योंकि हम लाइव कैमरा फ्रेम भेज रहे हैं
           image: { 
             type: "base64", 
             value: base64Data 
@@ -57,16 +56,12 @@ export async function POST(request: Request) {
     const aiData = await aiResponse.json();
 
     // 4. वर्कफ़्लो के रिस्पॉन्स से डेटा निकालना
-    // वर्कफ़्लो का आउटपुट थोड़ा जटिल होता है, इसलिए हम उसे डायनामिक तरीके से एक्सट्रेक्ट करेंगे
     let category = "Unknown";
     let confidence = 0;
 
-    // JSON रिस्पॉन्स में 'predictions' या 'top' क्लास खोजना
     const responseString = JSON.stringify(aiData);
     
-    // अगर ऑब्जेक्ट डिटेक्ट हुआ है तो उसे निकालना (Regex या Parsing के जरिए)
     try {
-       // वर्कफ़्लो आमतौर पर आउटपुट को एक कस्टम नाम के अंदर भेजता है, हम सभी predictions खंगालेंगे
        const extractPredictions = (obj: any): any[] => {
           if (!obj) return [];
           if (Array.isArray(obj.predictions)) return obj.predictions;
@@ -82,7 +77,6 @@ export async function POST(request: Request) {
        const predictions = extractPredictions(aiData);
 
        if (predictions.length > 0) {
-           // सबसे ज्यादा कॉन्फिडेंस वाले कचरे को चुनना
            predictions.sort((a, b) => b.confidence - a.confidence);
            category = predictions[0].class;
            confidence = predictions[0].confidence;
@@ -98,7 +92,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ 
         success: false, 
         message: "मॉडल को कचरा समझ नहीं आया।", 
-        debugData: aiData // अगर मॉडल कुछ और भेज रहा है तो वह कंसोल में दिख जाएगा
+        debugData: aiData 
       }, { status: 200 });
     }
 
@@ -121,7 +115,7 @@ export async function POST(request: Request) {
       points = 20;
     }
 
-    // 6. Cloudflare D1 Database में सुरक्षित करना
+    // 6. Cloudflare D1 Database में सुरक्षित करना (जैसा आपने रखा था)
     const db = env.DB;
     if (db) {
       const activeUserId = userId || "rishi_raj_prasad"; 
