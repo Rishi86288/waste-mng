@@ -115,7 +115,7 @@ export async function POST(request: Request) {
       points = 20;
     }
 
-    // 6. Cloudflare D1 Database में सुरक्षित करना (जैसा आपने रखा था)
+    /* 6. Cloudflare D1 Database में सुरक्षित करना (जैसा आपने रखा था)
     const db = env.DB;
     if (db) {
       const activeUserId = userId || "rishi_raj_prasad"; 
@@ -128,7 +128,7 @@ export async function POST(request: Request) {
         `UPDATE users SET green_points = green_points + ? WHERE id = ?`
       ).bind(points, activeUserId).run();
     }
-
+*/
     return NextResponse.json({
       success: true,
       category,
