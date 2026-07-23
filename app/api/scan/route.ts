@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const { image, userId } = await request.json();
 
     if (!image) {
-      return NextResponse.json({ success: false, message: "इमेज प्राप्त नहीं हुई।" }, { status: 400 });
+      return NextResponse.json({ success: false, message: "IMAGE NOT DETECTED" }, { status: 400 });
     }
 
     // 1. Base64 स्ट्रिंग को क्लीन करना (थोड़ा बेहतर किया है ताकि webp/jpeg सब चले)
