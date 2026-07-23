@@ -23,10 +23,10 @@ export async function POST(request: Request) {
     }
 
     // तुम्हारी असली API Key
-    const API_KEY = env.ROBOFLOW_API_KEY || "7ruKhCMAmFFJhFkWVulk"; 
+    const API_KEY = env.ROBOFLOW_API_KEY || "Zl3vF4HdrzIMfTOuvrzB"; 
     
     // तुम्हारा वर्कफ़्लो URL
-    const ROBOFLOW_WORKFLOW_URL = "https://serverless.roboflow.com/rishi-raj-prasad-s-workspace/workflows/plastic-waste-qczkq-ik2yk";
+    const ROBOFLOW_WORKFLOW_URL = "https://serverless.roboflow.com/theobald2798-landers-gmail-com/workflows/segrigate";
 
     // 3. Roboflow Workflows को तुम्हारे फॉर्मेट में रिक्वेस्ट भेजना
     const aiResponse = await fetch(ROBOFLOW_WORKFLOW_URL, {
