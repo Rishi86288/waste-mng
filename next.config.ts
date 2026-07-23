@@ -1,12 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // 1. Next.js को बताएँ कि इस पैकेज को अलग से हैंडल करे
-  experimental: {
-    serverComponentsExternalPackages: ['@cloudflare/next-on-pages'],
-  },
+  // 1. Next.js 16 का नया सिंटैक्स (experimental हटा दिया गया है)
+  serverExternalPackages: [
+    '@cloudflare/next-on-pages', 
+    'async_hooks', 
+    'node:async_hooks'
+  ],
   
-  // 2. Webpack को बताएँ कि async_hooks को लोकल फाइल न समझे
+  // 2. Turbopack के बिल्ड एरर को शांत करने के लिए एक खाली ऑब्जेक्ट
+  turbopack: {},
+  
+  // 3. Webpack का कॉन्फ़िगरेशन (ताकि Edge Runtime पर दिक्कत न आए)
   webpack: (config, { isServer, nextRuntime }) => {
     if (isServer && nextRuntime === 'edge') {
       config.externals = [
