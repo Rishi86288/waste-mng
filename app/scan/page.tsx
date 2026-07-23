@@ -37,18 +37,29 @@ export default function LiveScanPage() {
         const base64Image = canvas.toDataURL("image/jpeg", 0.6);
         setImagePreview(base64Image); 
 
-        try {
+     try {
           const res = await fetch("/api/scan", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ image: base64Image, userId: "Rishi_Raj" }),
           });
 
-          // पहले बैकएंड का रिस्पॉन्स पढ़ेंगे ताकि असली एरर पता चले
-          const data = await res.json(); 
+          // 1. JSON डायरेक्ट पढ़ने के बजाय, पहले रिस्पॉन्स को Text के रूप में पढ़ें
+          const textResponse = await res.text();
+          let data;
+
+          // 2. अब हम इसे JSON में बदलने की कोशिश करेंगे
+          try {
+            data = JSON.parse(textResponse);
+          } catch (parseError) {
+            // अगर यह JSON नहीं है (यानी Cloudflare का डिफ़ॉल्ट टेक्स्ट एरर है)
+            console.error("API से JSON नहीं आया:", textResponse);
+            setErrorMsg(`सर्वर क्रैश (Status: ${res.status}): ${textResponse.substring(0, 50)}...`);
+            setIsScanning(false);
+            return;
+          }
 
           if (!res.ok) {
-            // अगर बैकएंड 500 मारता है, तो असली वजह स्क्रीन पर दिखेगी
             setErrorMsg(`बैकएंड एरर: ${data.error || data.message || "सर्वर क्रैश हो गया"}`);
             setIsScanning(false);
             return;
