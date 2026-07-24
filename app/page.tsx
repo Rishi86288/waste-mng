@@ -10,7 +10,7 @@ export default function Home() {
             🚀 Smart Waste Management Solution
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-blue-900 tracking-tight leading-tight">
-            Put Your Trash in the <span className="text-transparent bg-clip-text bg-gradient-tor from-green-400 to-emerald-400">Right Place</span>
+            Put Your Trash in the <span className="forced-color-adjust-auto bg-clip-text bg-gradient-tor text-yellow-200">Right Place</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed">
             Take a picture of your waste with your mobile camera, let our advanced AI identify it, get the perfect bin suggested, and earn <strong>Green Points</strong> for saving the planet.
@@ -48,7 +48,7 @@ export default function Home() {
             <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-center hover:shadow-lg transition-shadow">
               <div className="text-4xl mb-4">🏆</div>
               <h3 className="text-xl font-bold mb-2 text-gray-800">Earn Rewards</h3>
-              <p className="text-gray-600">Dispose correctly at designated spots and earn points for your institute profile.</p>
+              <p className="text-gray-600">Dispose correctly at designated spots and earn points.</p>
             </div>
           </div>
         </div>
