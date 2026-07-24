@@ -9,8 +9,8 @@ export default function Home() {
           <div className="inline-block px-4 py-1.5 mb-6 text-sm font-semibold text-green-800 bg-green-100 rounded-full">
             🚀 Smart Waste Management Solution
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-gray-900 tracking-tight leading-tight">
-            Put Your Trash in the <span className="text-transparent bg-clip-text bg-gradient-tor from-green-600 to-emerald-400">Right Place</span>
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-blue-900 tracking-tight leading-tight">
+            Put Your Trash in the <span className="text-transparent bg-clip-text bg-gradient-tor from-green-400 to-emerald-400">Right Place</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10 leading-relaxed">
             Take a picture of your waste with your mobile camera, let our advanced AI identify it, get the perfect bin suggested, and earn <strong>Green Points</strong> for saving the planet.
