@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
+import Navbar from "./navbar";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -18,24 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-gray-50 text-gray-900 flex flex-col min-h-screen`}>
-        {/* Top Navigation Bar */}
-        <nav className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex-shrink:0 flex items-center gap-2">
-                <span className="text-3xl">♻️</span>
-                <span className="font-extrabold text-xl tracking-tight text-green-700">Duvision</span>
-              </div>
-              <div className="hidden md:flex space-x-8">
-                <Link href="/" className="text-gray-600 hover:text-green-600 font-medium transition-colors">Home</Link>
-                <Link href="/about" className="text-gray-600 hover:text-green-600 font-medium transition-colors">About</Link>
-                <Link href="/team" className="text-gray-600 hover:text-green-600 font-medium transition-colors">Team</Link>
-                <Link href="/scan" className="text-gray-600 hover:text-green-600 font-medium transition-colors">Scan</Link>
-                <Link href="/contact" className="text-gray-600 hover:text-green-600 font-medium transition-colors">Contact</Link>
-              </div>
-            </div>
-          </div>
-        </nav>
+        
+        {/* Mobile Responsive Navbar Component */}
+        <Navbar />
 
         {/* Main Content */}
         <main className="flex:grow">
@@ -64,7 +50,7 @@ export default function RootLayout({
             <div>
               <h4 className="text-lg font-semibold text-white mb-4">Connect</h4>
               <p className="text-sm text-gray-400 mb-2">CIPET IPT, Ahmedabad</p>
-              <p className="text-sm text-gray-400 mb-2">Email: support@cipethub.in</p>
+              <p className="text-sm text-gray-400 mb-2">Email: contact@duvision.in</p>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-500">
