@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const { image, userId } = await request.json();
 
     if (!image || !userId) {
-      return NextResponse.json({ success: false, message: "Missing image or authentication" }, { status: 400 });
+      return NextResponse.json({ success: false, message: "Kindly! login to proceed" }, { status: 400 });
     }
 
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
