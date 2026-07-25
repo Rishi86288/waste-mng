@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Firebase से यूजर के लॉग इन का समय निकाल रहे हैं
         const lastSignInTime = new Date(currentUser.metadata.lastSignInTime || "").getTime();
         const currentTime = Date.now();
-        const TWENTY_FOUR_HOURS = 1 * 60 * 1000; // 24 घंटे को मिलीसेकंड्स में बदला
+        const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000; // 24 घंटे को मिलीसेकंड्स में बदला
 
         // अगर लॉग इन को 24 घंटे से ज्यादा हो गए हैं
         if (currentTime - lastSignInTime > TWENTY_FOUR_HOURS) {
