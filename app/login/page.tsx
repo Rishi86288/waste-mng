@@ -1,4 +1,3 @@
-// app/login/page.tsx
 "use client";
 import { useState } from "react";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
@@ -12,22 +11,35 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  // डेटाबेस में लास्ट लॉग इन टाइम अपडेट करने के लिए
+  const syncUserToDatabase = async (uid: string, email: string, name: string) => {
+    await fetch("/api/user/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uid, email, name }),
+    });
+  };
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const res = await signInWithEmailAndPassword(auth, email, password);
+      // लॉग इन के बाद डेटाबेस सिंक करना
+      await syncUserToDatabase(res.user.uid, res.user.email!, res.user.displayName || "User");
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const res = await signInWithPopup(auth, googleProvider);
+      // गूगल लॉग इन के बाद डेटाबेस सिंक करना
+      await syncUserToDatabase(res.user.uid, res.user.email!, res.user.displayName || "Google User");
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
     }
   };
 
@@ -54,7 +66,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-center text-sm text-gray-600 mt-6">
-          Don't have an account? <Link href="/signup" className="text-green-600 font-bold">Sign Up</Link>
+          Don&apos;t have an account? <Link href="/signup" className="text-green-600 font-bold">Sign Up</Link>
         </p>
       </div>
     </div>
