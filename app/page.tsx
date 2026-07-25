@@ -17,7 +17,7 @@ export default function Home() {
             </div>
 
             {/* Main Heading */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 text-white tracking-tight leading-[1.15]">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 text-gray-900 tracking-tight leading-[1.15]">
               Put Your Trash in the <br className="hidden sm:inline" />
               <span className="text-green-700">Right Place</span>
             </h1>
@@ -224,10 +224,10 @@ export default function Home() {
 
       {/* 4. "Be a Part of the Change" Banner Section */}
       <section className="w-full py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto relative rounded-3xl overflow-hidden bg-gradient-tor from-green-50 to-emerald-100 border border-green-200/60 shadow-lg p-8 sm:p-12 lg:p-16 flex flex-col lg:flex-row items-center justify-between">
+        <div className="max-w-7xl mx-auto relative rounded-3xl overflow-hidden bg-gradient-tor from-green-50 to-emerald-100 border border-green-600/60 shadow-lg p-8 sm:p-12 lg:p-16 flex flex-col lg:flex-row items-center justify-between">
           
           <div className="max-w-xl text-left z-10 mb-8 lg:mb-0">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-4">
               Be a Part of the Change
             </h2>
             <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-6">
