@@ -3,7 +3,7 @@ Step 1: Create a Google Account
 If you don't already have one:
 Go to https://accounts.google.com⁠�
 Create a Google account.
-Sign in.
+Sign in....
 Step 2: Open Google Colab
 Visit https://colab.research.google.com⁠�
 Click New Notebook.
