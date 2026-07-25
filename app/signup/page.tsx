@@ -1,12 +1,13 @@
+// app/signup/page.tsx
 "use client";
 import { useState } from "react";
 import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from "firebase/auth";
-import { auth, googleProvider } from "../lib/firebase";
+import { auth, googleProvider } from "../lib/firebase"; // अपना पाथ चेक कर लें
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function SignupPage() {
-  const [name, setName] = useState(""); // नया स्टेट: Full Name के लिए
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,6 +23,8 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(""); // नया प्रयास करने पर पुराना एरर हटा दें
+
     try {
       // 1. Firebase में अकाउंट बनाना
       const res = await createUserWithEmailAndPassword(auth, email, password);
@@ -29,33 +32,56 @@ export default function SignupPage() {
       // 2. Firebase प्रोफाइल में नाम अपडेट करना
       await updateProfile(res.user, { displayName: name });
       
-      // 3. PostgreSQL डेटाबेस में असली नाम सेव करना (New User की जगह)
+      // 3. PostgreSQL डेटाबेस में असली नाम सेव करना
       await syncUserToDatabase(res.user.uid, res.user.email!, name);
       
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        const errorCode = (err as any).code || err.message;
+        
+        // Firebase के अलग-अलग एरर्स को कैच करके कस्टम मैसेज सेट करना
+        if (errorCode.includes("auth/invalid-email")) {
+          setError("Invalid email format. Please enter a valid email address.");
+        } else if (errorCode.includes("auth/weak-password")) {
+          setError("Password is too weak. It must be at least 6 characters long.");
+        } else if (errorCode.includes("auth/email-already-in-use")) {
+          setError("This email is already registered. Please sign in instead.");
+        } else {
+          setError("An error occurred during sign up. Please try again.");
+        }
+      }
     }
   };
 
   const handleGoogleSignup = async () => {
+    setError("");
     try {
       const res = await signInWithPopup(auth, googleProvider);
       await syncUserToDatabase(res.user.uid, res.user.email!, res.user.displayName || "Google User");
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        const errorCode = (err as any).code || err.message;
+        if (errorCode.includes("auth/popup-closed-by-user")) {
+          setError("Google sign-in was canceled.");
+        } else {
+          setError("An error occurred with Google sign-in. Please try again.");
+        }
+      }
     }
   };
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-4">
+      {/* बैकग्राउंड और UI आपके पुराने कोड के अनुसार ही है */}
       <div className="max-w-md w-full bg-gray-900 rounded-2xl shadow-sm border border-gray-100 p-8">
-        <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+        <h2 className="text-2xl font-bold text-center mb-6 text-white">Create Account</h2>
+        
+        {/* एरर मैसेज */}
+        {error && <p className="text-red-500 text-sm mb-4 text-center font-medium">{error}</p>}
         
         <form onSubmit={handleSignup} className="space-y-4">
-          {/* नया Full Name इनपुट फील्ड */}
           <input 
             type="text" 
             placeholder="Full Name" 
@@ -91,8 +117,8 @@ export default function SignupPage() {
         <button onClick={handleGoogleSignup} className="w-full bg-white border border-gray-300 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-50 transition flex justify-center items-center gap-2">
           🌍 Continue with Google
         </button>
-        <p className="text-center text-sm text-gray-600 mt-6">
-          Already have an account? <Link href="/login" className="text-green-600 font-bold">Sign In</Link>
+        <p className="text-center text-sm text-gray-400 mt-6">
+          Already have an account? <Link href="/login" className="text-green-500 font-bold hover:underline">Sign In</Link>
         </p>
       </div>
     </div>
