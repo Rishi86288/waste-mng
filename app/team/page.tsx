@@ -1,30 +1,33 @@
 import Link from "next/link";
+import imagedu from "../components/teams_image/8.jpeg"
+import imageri from "../components/teams_image/9.jpeg"
+import imagesa from "../components/teams_image/10.jpeg"
 
 export default function TeamPage() {
   const teamMembers = [
     {
       id: 1,
       name: "Rishi Raj Prasad",
-      role: "Lead Developer",
-      image: "https://ui-avatars.com/api/?name=Rishi+Raj+Prasad&background=0D8ABC&color=fff&size=256", 
-      linkedin: "#",
-      email: "mailto:rishi@example.com"
+      role: "Manufacturing Engineering",
+      image: imageri, 
+      linkedin: "https://www.linkedin.com/in/rishi-raj-prasad-651ab5332/",
+      email: "mailto:support@cipethub.in"
     },
     {
       id: 2,
-      name: "Team Member 2",
-      role: "Design & Media Coordinator",
-      image: "https://ui-avatars.com/api/?name=Team+Member+2&background=10B981&color=fff&size=256",
-      linkedin: "#",
-      email: "mailto:member2@example.com"
+      name: "Durgesh Bhuarya",
+      role: "Plastic Engineering",
+      image: imagedu,
+      linkedin: "https://www.linkedin.com/in/durgesh-bhuarya-20423a251",
+      email: "mailto:durgesh09@gmail.com"
     },
     {
       id: 3,
-      name: "Team Member 3",
-      role: "AI/ML Engineer",
-      image: "https://ui-avatars.com/api/?name=Team+Member+3&background=F59E0B&color=fff&size=256",
-      linkedin: "#",
-      email: "mailto:member3@example.com"
+      name: "Samip Agrawal",
+      role: "Plastic Engineering",
+      image: imagesa,
+      linkedin: "https://www.linkedin.com/in/samip-agrawal-077ab3314",
+      email: "mailto:samipagrawal102@gmail.com"
     }
   ];
 
@@ -41,10 +44,10 @@ export default function TeamPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
           {teamMembers.map((member) => (
             <div key={member.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group">
-              <div className="h-64 overflow-hidden relative bg-gray-200">
+              <div className="h-104 overflow-hidden relative bg-gray-200">
                 {/* Image Placeholder */}
                 <img 
-                  src={member.image} 
+                  src={typeof member.image === 'string' ? member.image : member.image.src} 
                   alt={member.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />

@@ -9,6 +9,8 @@ export default function Navbar() {
   const { user } = useAuth();
   // State for mobile menu toggle
   const [isOpen, setIsOpen] = useState(false);
+  // State for mobile policies dropdown
+  const [isPoliciesOpen, setIsPoliciesOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -37,6 +39,24 @@ export default function Navbar() {
             <Link href="/team" className="text-gray-600 hover:text-green-600 font-medium transition-colors">Team</Link>
             <Link href="/scan" className="text-gray-600 hover:text-green-600 font-medium transition-colors">Scan</Link>
             <Link href="/contact" className="text-gray-600 hover:text-green-600 font-medium transition-colors">Contact</Link>
+            
+            {/* Desktop Policies Dropdown */}
+            <div className="relative group py-6">
+              <button className="flex items-center gap-1 text-gray-600 hover:text-green-600 font-medium transition-colors">
+                Policies 
+                <svg className="w-4 h-4 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </button>
+              <div className="absolute left-0 mt-0 w-52 bg-white border border-gray-100 rounded-md shadow-lg opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all z-50">
+                <div className="py-2">
+                  <Link href="/policies/privacy-policy" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">Privacy Policy</Link>
+                  <Link href="/policies/credit-policy" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">Credit Policy</Link>
+                  <Link href="/policies/hyperlinking-policy" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">Hyperlinking Policy</Link>
+                  <Link href="/policies/terms-and-conditions" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">Terms & Conditions</Link>
+                  <Link href="/policies/copyright-policy" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">Copyright Policy</Link>
+                  <Link href="/policies/other-policies" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">Other Policies</Link>
+                </div>
+              </div>
+            </div>
             
             {user ? (
               <>
@@ -79,13 +99,35 @@ export default function Navbar() {
 
       {/* Mobile Menu Dropdown */}
       {isOpen && (
-        <div className="absolute top-16 left-0 w-full bg-white border-b border-gray-200 shadow-2xl md:hidden z-50">
+        <div className="absolute top-16 left-0 w-full bg-white border-b border-gray-200 shadow-2xl md:hidden z-50 max-h-[85vh] overflow-y-auto">
           <div className="px-4 pt-2 pb-6 space-y-1 flex flex-col">
             <Link href="/" onClick={() => setIsOpen(false)} className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-green-50">Home</Link>
             <Link href="/about" onClick={() => setIsOpen(false)} className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-green-50">About</Link>
             <Link href="/team" onClick={() => setIsOpen(false)} className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-green-50">Team</Link>
             <Link href="/scan" onClick={() => setIsOpen(false)} className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-green-50">Scan</Link>
             <Link href="/contact" onClick={() => setIsOpen(false)} className="block px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-green-50">Contact</Link>
+            
+            {/* Mobile Policies Dropdown */}
+            <div>
+              <button 
+                onClick={() => setIsPoliciesOpen(!isPoliciesOpen)} 
+                className="w-full text-left px-3 py-3 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-green-50 flex justify-between items-center"
+              >
+                Policies
+                <svg className={`w-5 h-5 transform transition-transform duration-200 ${isPoliciesOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+              </button>
+              
+              {isPoliciesOpen && (
+                <div className="pl-4 py-2 space-y-1 bg-gray-50 rounded-lg mt-1 border border-gray-100">
+                  <Link href="/policies/privacy-policy" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-green-700 hover:bg-green-100">Privacy Policy</Link>
+                  <Link href="/policies/credit-policy" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-green-700 hover:bg-green-100">Credit Policy</Link>
+                  <Link href="/policies/hyperlinking-policy" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-green-700 hover:bg-green-100">Hyperlinking Policy</Link>
+                  <Link href="/policies/terms-and-conditions" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-green-700 hover:bg-green-100">Terms & Conditions</Link>
+                  <Link href="/policies/copyright-policy" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-green-700 hover:bg-green-100">Copyright Policy</Link>
+                  <Link href="/policies/other-policies" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-green-700 hover:bg-green-100">Other Policies</Link>
+                </div>
+              )}
+            </div>
             
             {user ? (
               <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-2">

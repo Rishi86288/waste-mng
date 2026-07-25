@@ -1,3 +1,5 @@
+import about_image from "../components/about_image/about1.jpeg"
+
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white">
@@ -21,8 +23,12 @@ export default function AboutPage() {
               We aim to create a smart campus and eventually a smart city where every individual is empowered to make the right ecological choice with just a tap on their mobile phone.
             </p>
           </div>
-          <div className="bg-gray-100 rounded-2xl h-64 flex items-center justify-center border-4 border-dashed border-gray-300">
-            <span className="text-6xl">🌍</span>
+          <div className="bg-gray-100 rounded-2xl  flex items-center justify-center border-4 border-dashed border-gray-300">
+            <span className="text-4xl"> <img 
+                  src={typeof about_image === 'string' ? about_image : about_image.src}
+                  alt="Loading Image"
+                  className=" rounded-2xl "
+                /></span>
           </div>
         </div>
 
