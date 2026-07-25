@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Link from "next/link";
-import Navbar from "./navbar";
+import Navbar from "./components/navbar";
+import { AuthProvider } from "./context/AuthContext";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -19,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-gray-50 text-gray-900 flex flex-col min-h-screen`}>
-        
+          <AuthProvider>
         {/* Mobile Responsive Navbar Component */}
         <Navbar />
 
@@ -50,13 +51,14 @@ export default function RootLayout({
             <div>
               <h4 className="text-lg font-semibold text-white mb-4">Connect</h4>
               <p className="text-sm text-gray-400 mb-2">CIPET IPT, Ahmedabad</p>
-              <p className="text-sm text-gray-400 mb-2">Email: contact@duvision.in</p>
+              <p className="text-sm text-gray-400 mb-2">Email: support@cipethub.in</p>
             </div>
           </div>
           <div className="border-t border-gray-800 mt-8 pt-6 text-center text-sm text-gray-500">
             © {new Date().getFullYear()} Duvision Team. All rights reserved.
           </div>
         </footer>
+        </AuthProvider>
       </body>
     </html>
   );

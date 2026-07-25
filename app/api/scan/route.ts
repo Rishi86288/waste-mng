@@ -1,66 +1,39 @@
+// app/api/scan/route.ts
 import { NextResponse } from "next/server";
-import { getRequestContext } from "@cloudflare/next-on-pages";
+import { Pool } from "pg";
 
-export const runtime = 'edge';
+// Using Node standard runtime for DB compatibility, no 'edge' runtime specified
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 export async function POST(request: Request) {
   try {
     const { image, userId } = await request.json();
 
-    if (!image) {
-      return NextResponse.json({ success: false, message: "IMAGE NOT DETECTED" }, { status: 400 });
+    if (!image || !userId) {
+      return NextResponse.json({ success: false, message: "Missing image or authentication" }, { status: 400 });
     }
 
-    // 1. Base64 स्ट्रिंग को क्लीन करना (थोड़ा बेहतर किया है ताकि webp/jpeg सब चले)
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-
-    // 2. Cloudflare से Environment Variables निकालना
-    let env: any = {};
-    try {
-      env = getRequestContext().env;
-    } catch (e) {
-      env = process.env; 
-    }
-
-    // तुम्हारी असली API Key
-    const API_KEY = env.ROBOFLOW_API_KEY || "Zl3vF4HdrzIMfTOuvrzB"; 
-    
-    // तुम्हारा वर्कफ़्लो URL
+    const API_KEY = process.env.ROBOFLOW_API_KEY;
     const ROBOFLOW_WORKFLOW_URL = "https://serverless.roboflow.com/theobald2798-landers-gmail-com/workflows/segrigate";
 
-    // 3. Roboflow Workflows को तुम्हारे फॉर्मेट में रिक्वेस्ट भेजना
     const aiResponse = await fetch(ROBOFLOW_WORKFLOW_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        api_key: API_KEY,
-        inputs: {
-          image: { 
-            type: "base64", 
-            value: base64Data 
-          }
-        }
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ api_key: API_KEY, inputs: { image: { type: "base64", value: base64Data } } })
     });
 
     if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      return NextResponse.json(
-        { success: false, error: `Roboflow API क्रैश (Status: ${aiResponse.status}). Details: ${errorText}` }, 
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: "AI Processing Failed" }, { status: 500 });
     }
 
     const aiData = await aiResponse.json();
-
-    // 4. वर्कफ़्लो के रिस्पॉन्स से डेटा निकालना
     let category = "Unknown";
-    let confidence = 0;
+    let confidence = 0.8;
 
-    const responseString = JSON.stringify(aiData);
-    
     try {
        const extractPredictions = (obj: any): any[] => {
           if (!obj) return [];
@@ -73,62 +46,49 @@ export async function POST(request: Request) {
           }
           return [];
        };
-
        const predictions = extractPredictions(aiData);
-
        if (predictions.length > 0) {
            predictions.sort((a, b) => b.confidence - a.confidence);
            category = predictions[0].class;
            confidence = predictions[0].confidence;
        } else if (aiData.top) {
            category = aiData.top;
-           confidence = aiData.confidence || 0.8;
        }
     } catch (e) {
-       console.error("Parsing workflow response failed", e);
+       console.error("Parse failed");
     }
 
     if (category === "Unknown") {
-      return NextResponse.json({ 
-        success: false, 
-        message: "मॉडल को कचरा समझ नहीं आया।", 
-        debugData: aiData 
-      }, { status: 200 });
+      return NextResponse.json({ success: false, message: "Could not identify object." }, { status: 200 });
     }
 
-    // 5. कचरे की कैटेगरी के अनुसार पॉइंट्स और निर्देश
-    let points = 10;
+    // Points calculation logic exactly as requested
+    let points = 2; // Default for reuse/recycle
     let instruction = "इसे रीसाइक्लिंग बिन में डालें।";
     const lowerCategory = category.toLowerCase();
 
     if (lowerCategory.includes("compost") || lowerCategory.includes("organic") || lowerCategory.includes("food")) {
       instruction = "यह गीला/जैविक कचरा है। इसे खाद (Compost) वाले डिब्बे में डालें।"; 
-      points = 15;
+      points = 1;
     } else if (lowerCategory.includes("hazard") || lowerCategory.includes("battery")) {
-      instruction = "यह खतरनाक कचरा है! इसे सामान्य कचरे में न फेंके।"; 
-      points = 25;
+      instruction = "यह खतरनाक कचरा है! इसे सुरक्षित डिस्पोजल यूनिट में डालें।"; 
+      points = 0.5;
     } else if (lowerCategory.includes("e-waste") || lowerCategory.includes("electronic")) {
       instruction = "यह ई-वेस्ट है। इसे अधिकृत ई-वेस्ट कलेक्शन सेंटर पर दें।"; 
-      points = 30;
-    } else if (lowerCategory.includes("plastic") || lowerCategory.includes("bottle")) {
-      instruction = "यह प्लास्टिक वेस्ट है। कृपया इसे रीसाइक्लिंग बिन में डालें।";
-      points = 20;
+      points = 2;
     }
 
-    /* 6. Cloudflare D1 Database में सुरक्षित करना (जैसा आपने रखा था)
-    const db = env.DB;
-    if (db) {
-      const activeUserId = userId || "rishi_raj_prasad"; 
-      
-      await db.prepare(
-        `INSERT INTO scan_history (user_id, waste_category, confidence_score, points_awarded) VALUES (?, ?, ?, ?)`
-      ).bind(activeUserId, category, confidence, points).run();
+    // Update PostgreSQL Database securely
+    await pool.query(
+      "INSERT INTO scan_history (user_id, waste_category, confidence_score, points_awarded) VALUES ($1, $2, $3, $4)",
+      [userId, category, confidence, points]
+    );
 
-      await db.prepare(
-        `UPDATE users SET green_points = green_points + ? WHERE id = ?`
-      ).bind(points, activeUserId).run();
-    }
-*/
+    await pool.query(
+      "UPDATE users SET green_points = green_points + $1, scans_completed = scans_completed + 1 WHERE id = $2",
+      [points, userId]
+    );
+
     return NextResponse.json({
       success: true,
       category,
@@ -138,7 +98,6 @@ export async function POST(request: Request) {
     });
 
   } catch (error: any) {
-    console.error("Workflow API Error:", error);
-    return NextResponse.json({ success: false, error: `सर्वर एरर: ${error.message}` }, { status: 500 });
+    return NextResponse.json({ success: false, error: `Server Error: ${error.message}` }, { status: 500 });
   }
 }
