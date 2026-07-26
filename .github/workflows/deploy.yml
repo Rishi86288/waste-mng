@@ -31,7 +31,7 @@ jobs:
             # ENV_DATA में जो भी हमने GitHub Secret में डाला है, वो यहाँ .env में सेव हो जाएगा
             echo "$ENV_DATA" > .env
             
-            # डिपेंडेंसीज इंस्टॉल करना
+            # डिपेंडेंसीज इंस्टॉल करना  
             npm install --legacy-peer-deps
             npm install @hcaptcha/react-hcaptcha --legacy-peer-deps
             
