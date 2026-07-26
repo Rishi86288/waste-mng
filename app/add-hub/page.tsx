@@ -302,7 +302,7 @@ export default function AddHubPage() {
                 disabled={isSubmitting || !captchaToken} // बटन तब तक काम नहीं करेगा जब तक कैप्चा सॉल्व ना हो
                 className="w-full mt-6 py-3 px-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-lg shadow-md transition-colors duration-200"
               >
-                {!captchaToken ? "Please Solve Captcha to Submit" : (isSubmitting ? "Submitting..." : "Submit Hub Request")}
+                {!captchaToken ? "Please Solve Captcha to Submit " : (isSubmitting ? "Submitting..." : "Submit Hub Request")}
               </button>
               
               {/* Error/Sending Message */}
