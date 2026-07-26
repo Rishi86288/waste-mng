@@ -222,7 +222,7 @@ export default function Home() {
       </section>
 
 
-      {/* 4. "Be a Part of the Change" Banner Section */}
+      {/* 4. "Be a Part of the Change" Banner Section ..*/}
       <section className="w-full py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto relative rounded-3xl overflow-hidden bg-gradient-tor from-green-50 to-emerald-100 border border-green-600/60 shadow-lg p-8 sm:p-12 lg:p-16 flex flex-col lg:flex-row items-center justify-between">
           
