@@ -1,30 +1,25 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import ProtectedRoute from "../components/ProtectedRoute"; 
 import { useAuth } from "../context/AuthContext";
-// 1. hCaptcha को इम्पोर्ट कर रहे हैं
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 export default function AddHubPage() {
   const { user } = useAuth();
   
-  // States for user profile
   const [dbName, setDbName] = useState<string>("");
   const [points, setPoints] = useState<number>(0); 
   const [scansCompleted, setScansCompleted] = useState<number>(0);
   const [userRank, setUserRank] = useState<string>("Unranked");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Form status states
   const [result, setResult] = useState<string>("");
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // --- NEW: Captcha Token State ---
-  // यह स्टेट स्टोर करेगी कि कैप्चा सॉल्व हुआ या नहीं
+  // Captcha Token State (सिर्फ बटन इनेबल/डिसएबल करने के लिए)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
-  // Waste types states
   const [selectedWastes, setSelectedWastes] = useState<string[]>([]);
   const [customWaste, setCustomWaste] = useState<string>("");
 
@@ -72,14 +67,10 @@ export default function AddHubPage() {
       return;
     }
 
-    // --- Strict Validation: अगर कैप्चा सॉल्व नहीं हुआ है ---
     if (!captchaToken) {
-      setResult(" Error: Please check the Captcha box before submitting.");
+      setResult("Error: Please check the Captcha box before submitting.");
       return;
     }
-
-    const target = event.target as HTMLFormElement;
-    const formData = new FormData(target);
 
     setIsSubmitting(true);
     setResult("Sending request...");
@@ -98,17 +89,20 @@ export default function AddHubPage() {
     }
     const finalAcceptedTypes = finalTypesArray.join(", "); 
 
-    formData.append("Accepted Waste Types", finalAcceptedTypes);
-    formData.append("access_key", accessKey); 
-    formData.append("subject", "New Recycling Hub Request - Duvision");
+    // --- फ्री वर्ज़न वाला सही तरीका (Raw FormData) ---
+    const target = event.target as HTMLFormElement;
+    const formData = new FormData(target);
     
-    // मैन्युअली कैप्चा टोकन फॉर्म में जोड़ रहे हैं ताकि Web3Forms इसे वेरीफाई कर सके
-    formData.append("h-captcha-response", captchaToken);
+    // अपनी एक्स्ट्रा चीज़ें जोड़ो (कैप्चा टोकन फॉर्म में पहले से है, उसे दोबारा मत जोड़ना!)
+    formData.append("access_key", accessKey);
+    formData.append("subject", "New Recycling Hub Request - Duvision");
+    formData.append("Accepted Waste Types", finalAcceptedTypes);
 
     try {
+        // --- Web3Forms API Call (बिना JSON के) ---
         const emailResponse = await fetch("https://api.web3forms.com/submit", {
           method: "POST",
-          body: formData
+          body: formData // सीधा FormData भेज रहे हैं, कोई Pro एरर नहीं आएगा
         });
         const emailData = await emailResponse.json();
 
@@ -143,12 +137,12 @@ export default function AddHubPage() {
             target.reset();
             setSelectedWastes([]); 
             setCustomWaste("");
-            setCaptchaToken(null); // सक्सेस के बाद कैप्चा टोकन क्लियर
+            setCaptchaToken(null); 
           } else {
             setResult("Email sent, but failed to save to Database.");
           }
         } else {
-          setResult(emailData.message || "Failed to verify Captcha or send email.");
+          setResult(emailData.message || "Failed to send email.");
         }
     } catch (error) {
         console.error("Error submitting form", error);
@@ -222,7 +216,7 @@ export default function AddHubPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Contact Number *</label>
-                    <input type="tel" name="contact_number" required placeholder="Enter your mobile number" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                    <input type="tel" name="contact_number" required placeholder="Enter your mobile number" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                   </div>
 
                   <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
@@ -251,7 +245,7 @@ export default function AddHubPage() {
                           value={customWaste}
                           onChange={(e) => setCustomWaste(e.target.value)}
                           placeholder="e.g. Organic Waste, Metals" 
-                          className="text-black mt-1 w-full p-2.5 border border-green-300 rounded-lg focus:ring-green-500 focus:border-green-500" 
+                          className="mt-1 w-full p-2.5 border border-green-300 rounded-lg focus:ring-green-500 focus:border-green-500" 
                         />
                       </div>
                     )}
@@ -260,52 +254,52 @@ export default function AddHubPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Village / Panchayat *</label>
-                      <input type="text" name="village_panchayat" required placeholder="Village or Panchayat name" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="village_panchayat" required placeholder="Village or Panchayat name" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Block *</label>
-                      <input type="text" name="block" required placeholder="Block name" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="block" required placeholder="Block name" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">City (Optional)</label>
-                      <input type="text" name="city" placeholder="City name" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="city" placeholder="City name" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">District *</label>
-                      <input type="text" name="district" required placeholder="District" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="district" required placeholder="District" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">State *</label>
-                      <input type="text" name="state" required placeholder="State" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="state" required placeholder="State" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Pin Code *</label>
-                      <input type="text" name="pincode" required placeholder="e.g. 110001" pattern="[0-9]{6}" title="6 digit pin code" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="pincode" required placeholder="e.g. 110001" pattern="[0-9]{6}" title="6 digit pin code" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                   </div>
                 </div>
               </div>
 
+              {/* स्पैम से बचने के लिए Web3Forms का Honeypot */}
               <input type="checkbox" name="botcheck" className="hidden" style={{ display: "none" }} />
               
-              {/* --- NEW, BULLETPROOF CAPTCHA SECTION --- */}
               <div className="mt-4 border-t pt-4">
                 <HCaptcha
-                  sitekey="50b2fe65-b00b-4b9e-ad62-3ba471098be2" // Web3Forms Universal SiteKey
-                  onVerify={(token) => setCaptchaToken(token)} // जब यूजर कैप्चा भर लेगा, तो टोकन सेव हो जाएगा
+                  sitekey="50b2fe65-b00b-4b9e-ad62-3ba471098be2"
+                  onVerify={(token) => setCaptchaToken(token)} 
+                  reCaptchaCompat={false}
                   onExpire={() => setCaptchaToken(null)}
                 />
               </div>
 
               <button 
                 type="submit" 
-                disabled={isSubmitting || !captchaToken} // बटन तब तक काम नहीं करेगा जब तक कैप्चा सॉल्व ना हो
+                disabled={isSubmitting || !captchaToken} 
                 className="w-full mt-6 py-3 px-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-lg shadow-md transition-colors duration-200"
               >
-                {!captchaToken ? "Please Solve Captcha to Submit " : (isSubmitting ? "Submitting..." : "Submit Hub Request")}
+                {!captchaToken ? "Please Solve Captcha to Submit" : (isSubmitting ? "Submitting..." : "Submit Hub Request")}
               </button>
               
-              {/* Error/Sending Message */}
               {result && !isSuccess && (
                 <p className="text-center mt-4 text-sm font-semibold text-red-600">{result}</p>
               )}
