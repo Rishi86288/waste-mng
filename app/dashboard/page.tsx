@@ -9,7 +9,7 @@ export default function DashboardPage() {
   const [points, setPoints] = useState(0); 
   const [scansCompleted, setScansCompleted] = useState(0);
   const [userRank, setUserRank] = useState("Unranked");
-  const [dbName, setDbName] = useState(""); // डेटाबेस से नाम स्टोर करने के लिए
+  const [dbName, setDbName] = useState("");
   
   const [pointsList, setPointsList] = useState([
     { id: 1, name: "Campus Main Gate Bin", address: "Gate 1, Campus", accepted_types: "Plastic, Paper" },
@@ -25,13 +25,12 @@ export default function DashboardPage() {
             setPoints(data.profile.green_points);
             setScansCompleted(data.profile.scans_completed);
             setUserRank(`#${data.rank}`);
-            setDbName(data.profile.name); // डेटाबेस से नाम सेट कर रहे हैं
+            setDbName(data.profile.name);
           }
         });
     }
   }, [user]);
 
-  // डिस्प्ले नेम तय करना (डेटाबेस का नाम पहले, फिर Firebase का, फिर डिफ़ॉल्ट)
   const displayName = dbName || user?.displayName || "User";
 
   return (
@@ -43,9 +42,16 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-extrabold text-gray-900">Welcome back, {displayName}! 👋</h1>
               <p className="text-gray-600 mt-1">Track your environmental impact and rewards.</p>
             </div>
-            <Link href="/scan" className="mt-4 md:mt-0 px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-all">
-              + New Scan
-            </Link>
+            
+            {/* यहाँ दोनों बटन्स को एक साथ रखा गया है */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
+              <Link href="/add-hub" className="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-all text-center">
+                Add Recycling Hub
+              </Link>
+              <Link href="/scan" className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition-all text-center">
+                + New Scan
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">

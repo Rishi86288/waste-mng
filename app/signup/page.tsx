@@ -64,7 +64,7 @@ export default function SignupPage() {
       if (err instanceof Error) {
         const errorCode = (err as any).code || err.message;
         if (errorCode.includes("auth/popup-closed-by-user")) {
-          setError("Google sign-in was canceled.");
+          setError("Google sign-up was canceled.");
         } else {
           setError("An error occurred with Google sign-in. Please try again.");
         }

@@ -20,6 +20,28 @@ export default function LoginPage() {
     });
   };
 
+  // 🔹 यह फंक्शन Firebase के एरर्स को फिल्टर करेगा और उसे छिपा देगा
+  const getFriendlyErrorMessage = (err: unknown) => {
+    if (err instanceof Error) {
+      const errorCode = (err as any).code || err.message || "";
+
+      if (errorCode.includes("invalid-credential") || errorCode.includes("user-not-found") || errorCode.includes("wrong-password")) {
+        return "Incorrect Email or Password. Please enter correct details or 'Continue with Google'.";
+      }
+      if (errorCode.includes("popup-closed-by-user")) {
+        return "Google sign-in was canceled."; // 1000159935.jpg वाले एरर का फिक्स
+      }
+      if (errorCode.includes("requests-from-referer")) {
+        return "Sign-in request is temporarily blocked by server configuration."; // 1000159934.jpg वाले एरर का फिक्स
+      }
+      if (errorCode.includes("network-request-failed")) {
+        return "Network error. Please check your internet connection.";
+      }
+    }
+    // 🔹 किसी भी अन्य एरर के लिए जेनेरिक मैसेज (Firebase का नाम कभी नहीं दिखेगा)
+    return "An unexpected authentication error occurred. Please try again.";
+  };
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); // नया प्रयास करने पर पुराना एरर हटा दें
@@ -28,25 +50,20 @@ export default function LoginPage() {
       await syncUserToDatabase(res.user.uid, res.user.email!, res.user.displayName || "User");
       router.push("/dashboard");
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        // Firebase के invalid-credential एरर को कैच करके कस्टम मैसेज सेट करना
-        if (err.message.includes("auth/invalid-credential") || (err as any).code === "auth/invalid-credential") {
-          setError("Incorrect Email or Password. Please enter correct details or 'Continue with Google'.");
-        } else {
-          // अगर कोई और एरर हो (जैसे नेटवर्क इश्यू)
-          setError("An error occurred during login. Please try again.");
-        }
-      }
+      // सीधे एरर मैसेज दिखाने के बजाय कस्टम हैंडलर का इस्तेमाल करें
+      setError(getFriendlyErrorMessage(err));
     }
   };
 
   const handleGoogleLogin = async () => {
+    setError(""); // नया प्रयास करने पर पुराना एरर हटा दें
     try {
       const res = await signInWithPopup(auth, googleProvider);
       await syncUserToDatabase(res.user.uid, res.user.email!, res.user.displayName || "Google User");
       router.push("/dashboard");
     } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message);
+      // Google लॉगिन में भी कस्टम हैंडलर का इस्तेमाल करें
+      setError(getFriendlyErrorMessage(err));
     }
   };
 
@@ -85,7 +102,7 @@ export default function LoginPage() {
           <div className="h-px bg-gray-600 flex-1"></div>
         </div>
 
-        <button onClick={handleGoogleLogin} className="w-full bg-[#e8f0eb] border border-gray-300 text-gray-800 font-bold py-3 rounded-lg hover:bg-white transition flex justify-center items-center gap-2">
+        <button onClick={handleGoogleLogin} type="button" className="w-full bg-[#e8f0eb] border border-gray-300 text-gray-800 font-bold py-3 rounded-lg hover:bg-white transition flex justify-center items-center gap-2">
           🌍 Continue with Google
         </button>
 
