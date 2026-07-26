@@ -74,7 +74,7 @@ export default function AddHubPage() {
 
     // --- Strict Validation: अगर कैप्चा सॉल्व नहीं हुआ है ---
     if (!captchaToken) {
-      setResult("Error: Please check the Captcha box before submitting.");
+      setResult(" Error: Please check the Captcha box before submitting.");
       return;
     }
 
