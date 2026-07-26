@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../lib/firebase";
+import logo from './logos/logo.jpeg'
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -28,11 +29,11 @@ export default function Navbar() {
           
           {/* Logo Area */}
           <div className="shrink-0 flex items-center gap-2">
-            <span className="text-3xl">♻️</span>
+             <img className="w-12 h-12 rounded-full object-cover" src={typeof logo === 'string' ? logo : logo.src}  alt="EC" />
             <span className="font-extrabold text-xl tracking-tight text-green-700">Duvision</span>
           </div>
 
-          {/* Desktop Menu */}
+          {/* Desktop Menu ♻️ */}
           <div className="hidden md:flex space-x-8 items-center">
             <Link href="/" className="text-gray-600 hover:text-green-600 font-medium transition-colors">Home</Link>
             <Link href="/about" className="text-gray-600 hover:text-green-600 font-medium transition-colors">About</Link>

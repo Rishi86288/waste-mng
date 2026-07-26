@@ -92,7 +92,7 @@ export default function ContactPage() {
           </div>
           <h3 className="text-3xl font-bold text-gray-900 mb-4">Let's Connect</h3>
           <p className="text-gray-600 mb-8">
-            Whether you're a student, educator, or industry professional — reach out and let's build something great together.
+            Whether you're a student, educator, or industry professional — reach out and let's make Duvision even better!.
           </p>
 
           <div className="space-y-6">
@@ -102,7 +102,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <h4 className="text-sm font-semibold text-gray-900">Email Us</h4>
-                <p className="text-gray-600 mt-1">admin@cipethub.in</p>
+                <p className="text-gray-600 mt-1">support@cipethub.in</p>
               </div>
             </div>
 
@@ -112,20 +112,11 @@ export default function ContactPage() {
               </div>
               <div>
                 <h4 className="text-sm font-semibold text-gray-900">Website</h4>
-                <a href="https://cipethub.in" className="text-teal-600 hover:underline mt-1 block">cipethub.in</a>
+                <a href="https://waste-mng.cipethub.in" className="text-teal-600 hover:underline mt-1 block">waste-mng.cipethub.in</a>
               </div>
             </div>
 
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 w-10 h-10 bg-green-50 text-green-600 rounded-lg flex items-center justify-center">
-                🏢
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900">CIPET Official</h4>
-                <a href="https://cipet.gov.in" className="text-green-600 hover:underline mt-1 block">cipet.gov.in</a>
-                <p className="text-sm text-gray-500 mt-1">T.V.K. Industrial Estate, Guindy, Chennai - 600 032</p>
-              </div>
-            </div>
+           
           </div>
         </div>
 
