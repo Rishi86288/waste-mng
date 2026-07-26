@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-gray-50 text-gray-900 flex flex-col min-h-screen`}>
           <AuthProvider>
-        {/* Mobile Responsive Navbar Component */}
+        {/* Mobile Responsive Navbar Component  . */}
         <Navbar />
 
         {/* Main Content */}
