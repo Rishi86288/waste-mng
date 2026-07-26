@@ -1,7 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import ProtectedRoute from "../components/ProtectedRoute"; 
 import { useAuth } from "../context/AuthContext";
+// 1. hCaptcha को इम्पोर्ट कर रहे हैं
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 export default function AddHubPage() {
   const { user } = useAuth();
@@ -18,6 +20,10 @@ export default function AddHubPage() {
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  // --- NEW: Captcha Token State ---
+  // यह स्टेट स्टोर करेगी कि कैप्चा सॉल्व हुआ या नहीं
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
   // Waste types states
   const [selectedWastes, setSelectedWastes] = useState<string[]>([]);
   const [customWaste, setCustomWaste] = useState<string>("");
@@ -28,7 +34,6 @@ export default function AddHubPage() {
   ];
 
   useEffect(() => {
-    // 1. Fetching User Data
     if (user?.uid) {
       fetch(`/api/user/profile?uid=${user.uid}`)
         .then((res) => res.json())
@@ -45,23 +50,11 @@ export default function AddHubPage() {
     } else {
         setIsLoading(false); 
     }
-    
-    // 2. Web3Forms Captcha Script
-    const script = document.createElement("script");
-    script.src = "https://web3forms.com/client/script.js";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
   }, [user]);
 
   const displayName = dbName || user?.displayName || "User";
   const emailID = user?.email || "";
 
-  // Checkbox Handler
   const handleCheckboxChange = (option: string) => {
     if (selectedWastes.includes(option)) {
       setSelectedWastes(selectedWastes.filter(item => item !== option));
@@ -79,11 +72,18 @@ export default function AddHubPage() {
       return;
     }
 
+    // --- Strict Validation: अगर कैप्चा सॉल्व नहीं हुआ है ---
+    if (!captchaToken) {
+      setResult("Error: Please check the Captcha box before submitting.");
+      return;
+    }
+
+    const target = event.target as HTMLFormElement;
+    const formData = new FormData(target);
+
     setIsSubmitting(true);
     setResult("Sending request...");
     
-    const target = event.target as HTMLFormElement;
-    const formData = new FormData(target);
     const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
 
     if (!accessKey) {
@@ -92,7 +92,6 @@ export default function AddHubPage() {
       return;
     }
 
-    // Processing Multiple Waste Types
     let finalTypesArray = selectedWastes.filter(w => w !== "Other"); 
     if (selectedWastes.includes("Other") && customWaste.trim() !== "") {
       finalTypesArray.push(customWaste.trim()); 
@@ -102,48 +101,54 @@ export default function AddHubPage() {
     formData.append("Accepted Waste Types", finalAcceptedTypes);
     formData.append("access_key", accessKey); 
     formData.append("subject", "New Recycling Hub Request - Duvision");
+    
+    // मैन्युअली कैप्चा टोकन फॉर्म में जोड़ रहे हैं ताकि Web3Forms इसे वेरीफाई कर सके
+    formData.append("h-captcha-response", captchaToken);
 
     try {
-        // Submit to Web3Forms
         const emailResponse = await fetch("https://api.web3forms.com/submit", {
           method: "POST",
           body: formData
         });
         const emailData = await emailResponse.json();
 
-        // Submit to Database
-        const dbPayload = {
-            user_uid: user?.uid,
-            name: displayName,
-            email: emailID,
-            rank: userRank,
-            items_scanned: scansCompleted,
-            green_points: points,
-            contact_number: formData.get("contact_number"),
-            village_panchayat: formData.get("village_panchayat"),
-            block: formData.get("block"),
-            city: formData.get("city"),
-            district: formData.get("district"),
-            state: formData.get("state"),
-            pincode: formData.get("pincode"),
-            accepted_types: finalAcceptedTypes 
-        };
+        if (emailData.success) {
+          const dbPayload = {
+              user_uid: user?.uid,
+              name: displayName,
+              email: emailID,
+              rank: userRank,
+              items_scanned: scansCompleted,
+              green_points: points,
+              contact_number: formData.get("contact_number"),
+              village_panchayat: formData.get("village_panchayat"),
+              block: formData.get("block"),
+              city: formData.get("city"),
+              district: formData.get("district"),
+              state: formData.get("state"),
+              pincode: formData.get("pincode"),
+              accepted_types: finalAcceptedTypes 
+          };
 
-        const dbResponse = await fetch("/api/hubs", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dbPayload)
-        });
-        const dbData = await dbResponse.json();
+          const dbResponse = await fetch("/api/hubs", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(dbPayload)
+          });
+          const dbData = await dbResponse.json();
 
-        if (emailData.success && dbData.success) {
-          setIsSuccess(true);
-          setResult("");
-          target.reset();
-          setSelectedWastes([]); 
-          setCustomWaste("");
+          if (dbData.success) {
+            setIsSuccess(true);
+            setResult("");
+            target.reset();
+            setSelectedWastes([]); 
+            setCustomWaste("");
+            setCaptchaToken(null); // सक्सेस के बाद कैप्चा टोकन क्लियर
+          } else {
+            setResult("Email sent, but failed to save to Database.");
+          }
         } else {
-          setResult(emailData.message || "Something went wrong with submission.");
+          setResult(emailData.message || "Failed to verify Captcha or send email.");
         }
     } catch (error) {
         console.error("Error submitting form", error);
@@ -185,7 +190,6 @@ export default function AddHubPage() {
           ) : (
             <form onSubmit={onSubmit} className="space-y-6">
               
-              {/* --- PRE-FILLED USER DATA SECTION --- */}
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                 <h3 className="font-semibold text-gray-800 mb-4">Your Profile Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -212,17 +216,15 @@ export default function AddHubPage() {
                 </div>
               </div>
 
-              {/* --- HUB DETAILS SECTION --- */}
               <div>
                 <h3 className="font-semibold text-gray-800 mb-4 border-b pb-2">Hub Location & Details</h3>
                 
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Contact Number *</label>
-                    <input type="tel" name="contact_number" required placeholder="Enter your mobile number" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                    <input type="tel" name="contact_number" required placeholder="Enter your mobile number" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                   </div>
 
-                  {/* --- Multiple Waste Types Checkboxes --- */}
                   <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
                     <label className="block text-sm font-medium text-gray-700 mb-3">Accepted Waste Types * (Select Multiple)</label>
                     
@@ -240,17 +242,16 @@ export default function AddHubPage() {
                       ))}
                     </div>
 
-                    {/* Custom input for "Other" */}
                     {selectedWastes.includes("Other") && (
                       <div className="mt-4 animate-fade-in-down">
-                        <label className="block text-sm font-medium text-gray-700">Specify Custom Waste Type(s) *</label>
+                        <label className="block text-sm font-medium text-gray-700 ">Specify Custom Waste Type(s) *</label>
                         <input 
                           type="text" 
                           required 
                           value={customWaste}
                           onChange={(e) => setCustomWaste(e.target.value)}
                           placeholder="e.g. Organic Waste, Metals" 
-                          className="text-black mt-1 w-full p-2.5 border border-green-300 rounded-lg focus:ring-green-500 focus:border-green-500" 
+                          className="mt-1 w-full p-2.5 border border-green-300 rounded-lg focus:ring-green-500 focus:border-green-500" 
                         />
                       </div>
                     )}
@@ -259,42 +260,49 @@ export default function AddHubPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Village / Panchayat *</label>
-                      <input type="text" name="village_panchayat" required placeholder="Village or Panchayat name" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="village_panchayat" required placeholder="Village or Panchayat name" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Block *</label>
-                      <input type="text" name="block" required placeholder="Block name" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="block" required placeholder="Block name" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">City (Optional)</label>
-                      <input type="text" name="city" placeholder="City name" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="city" placeholder="City name" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">District *</label>
-                      <input type="text" name="district" required placeholder="District" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="district" required placeholder="District" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">State *</label>
-                      <input type="text" name="state" required placeholder="State" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="state" required placeholder="State" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Pin Code *</label>
-                      <input type="text" name="pincode" required placeholder="e.g. 110001" pattern="[0-9]{6}" title="6 digit pin code" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="pincode" required placeholder="e.g. 110001" pattern="[0-9]{6}" title="6 digit pin code" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* --- CAPTCHA & HONEYPOT SECTION (बिलकुल सुरक्षित) --- */}
               <input type="checkbox" name="botcheck" className="hidden" style={{ display: "none" }} />
-              <div className="h-captcha mt-2" data-captcha="true"></div>
+              
+              {/* --- NEW, BULLETPROOF CAPTCHA SECTION --- */}
+              <div className="mt-4 border-t pt-4">
+                <HCaptcha
+                  sitekey="50b2fe65-b00b-4b9e-ad62-3ba471098be2" // Web3Forms Universal SiteKey
+                  onVerify={(token) => setCaptchaToken(token)} // जब यूजर कैप्चा भर लेगा, तो टोकन सेव हो जाएगा
+                  onExpire={() => setCaptchaToken(null)}
+                />
+              </div>
 
               <button 
                 type="submit" 
-                disabled={isSubmitting}
-                className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-bold rounded-lg shadow-md transition-colors duration-200"
+                disabled={isSubmitting || !captchaToken} // बटन तब तक काम नहीं करेगा जब तक कैप्चा सॉल्व ना हो
+                className="w-full mt-6 py-3 px-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-lg shadow-md transition-colors duration-200"
               >
-                {isSubmitting ? "Submitting..." : "Submit Hub Request"}
+                {!captchaToken ? "Please Solve Captcha to Submit" : (isSubmitting ? "Submitting..." : "Submit Hub Request")}
               </button>
               
               {/* Error/Sending Message */}

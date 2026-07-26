@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@cloudflare/next-on-pages": "^1.13.16",
+    "@hcaptcha/react-hcaptcha": "^2.0.2",
     "firebase": "^12.16.0",
     "next": "^15.5.2",
     "pg": "^8.22.0",
