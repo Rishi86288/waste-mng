@@ -216,7 +216,7 @@ export default function AddHubPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Contact Number *</label>
-                    <input type="tel" name="contact_number" required placeholder="Enter your mobile number" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                    <input type="tel" name="contact_number" required placeholder="Enter your mobile number" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                   </div>
 
                   <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
@@ -245,7 +245,7 @@ export default function AddHubPage() {
                           value={customWaste}
                           onChange={(e) => setCustomWaste(e.target.value)}
                           placeholder="e.g. Organic Waste, Metals" 
-                          className="mt-1 w-full p-2.5 border border-green-300 rounded-lg focus:ring-green-500 focus:border-green-500" 
+                          className="text-black mt-1 w-full p-2.5 border border-green-300 rounded-lg focus:ring-green-500 focus:border-green-500" 
                         />
                       </div>
                     )}
@@ -254,27 +254,27 @@ export default function AddHubPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Village / Panchayat *</label>
-                      <input type="text" name="village_panchayat" required placeholder="Village or Panchayat name" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="village_panchayat" required placeholder="Village or Panchayat name" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Block *</label>
-                      <input type="text" name="block" required placeholder="Block name" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="block" required placeholder="Block name" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">City (Optional)</label>
-                      <input type="text" name="city" placeholder="City name" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="city" placeholder="City name" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">District *</label>
-                      <input type="text" name="district" required placeholder="District" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="district" required placeholder="District" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">State *</label>
-                      <input type="text" name="state" required placeholder="State" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="state" required placeholder="State" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Pin Code *</label>
-                      <input type="text" name="pincode" required placeholder="e.g. 110001" pattern="[0-9]{6}" title="6 digit pin code" className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
+                      <input type="text" name="pincode" required placeholder="e.g. 110001" pattern="[0-9]{6}" title="6 digit pin code" className="text-black mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" />
                     </div>
                   </div>
                 </div>
