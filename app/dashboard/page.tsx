@@ -22,58 +22,80 @@ interface HubData {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  
+  // प्रोफाइल स्टेट्स
   const [points, setPoints] = useState<number>(0); 
   const [scansCompleted, setScansCompleted] = useState<number>(0);
   const [userRank, setUserRank] = useState<string>("Unranked");
   const [dbName, setDbName] = useState<string>("");
   
+  // हब्स स्टेट्स
   const [myHubs, setMyHubs] = useState<HubData[]>([]);
   const [communityHubs, setCommunityHubs] = useState<HubData[]>([]); 
   
+  // डिफ़ॉल्ट हब्स
   const [pointsList, setPointsList] = useState<PointLocation[]>([
     { id: 1, name: "Campus Main Gate Bin", address: "Gate 1, Campus", accepted_types: "Plastic, Paper" },
     { id: 2, name: "Hostel Block A Center", address: "Near Canteen", accepted_types: "E-Waste, Glass" }
   ]);
 
-  useEffect(() => {
-    if (user?.uid) {
-      fetch(`/api/user/profile?uid=${user.uid}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            setPoints(data.profile.green_points);
-            setScansCompleted(data.profile.scans_completed);
-            setUserRank(`#${data.rank}`);
-            setDbName(data.profile.name);
-          }
-        });
+  // --- डेटा फेच करने का फंक्शन (ताकि इसे बार-बार कॉल किया जा सके) ---
+  const fetchData = async () => {
+    if (!user?.uid) return;
 
-      fetch(`/api/hubs?uid=${user.uid}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success && data.hubs) {
-            setMyHubs(data.hubs);
-          }
-        });
-        
-      fetch(`/api/hubs?status=Approved`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success && data.hubs) {
-            setCommunityHubs(data.hubs);
-          }
-        });
+    try {
+      // 1. प्रोफाइल डेटा लाओ
+      const profileRes = await fetch(`/api/user/profile?uid=${user.uid}`);
+      const profileData = await profileRes.json();
+      if (profileData.success) {
+        setPoints(profileData.profile.green_points);
+        setScansCompleted(profileData.profile.scans_completed);
+        setUserRank(`#${profileData.rank}`);
+        setDbName(profileData.profile.name);
+      }
+
+      // 2. यूजर के हब्स लाओ
+      const myHubsRes = await fetch(`/api/hubs?uid=${user.uid}`);
+      const myHubsData = await myHubsRes.json();
+      if (myHubsData.success && myHubsData.hubs) {
+        setMyHubs(myHubsData.hubs);
+      }
+
+      // 3. ग्लोबल (कम्युनिटी) अप्रूव्ड हब्स लाओ
+      const commHubsRes = await fetch(`/api/hubs?status=Approved`);
+      const commHubsData = await commHubsRes.json();
+      if (commHubsData.success && commHubsData.hubs) {
+        setCommunityHubs(commHubsData.hubs);
+      }
+    } catch (error) {
+      console.error("Error fetching live data:", error);
     }
+  };
+
+  useEffect(() => {
+    // पेज लोड होते ही पहली बार तुरंत डेटा फेच करो
+    fetchData();
+
+    // --- POLLING LOGIC (Real-time Feel) ---
+    // हर 5 सेकंड (5000 ms) में बैकग्राउंड में नया डेटा लाओ
+    // यूजर को पेज रिफ्रेश नहीं करना पड़ेगा, स्टेटस अपने आप बदल जाएगा
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 5000); 
+
+    // जब यूजर पेज छोड़े, तो टाइमर को बंद कर दो (मेमोरी बचाने के लिए)
+    return () => clearInterval(intervalId);
+    
   }, [user]);
 
   const displayName = dbName || user?.displayName || "User";
 
-  // --- UPDATED LOGIC FOR STATUS COLORS ---
+  // स्टेटस के कलर्स
   const getStatusColor = (status: string) => {
     switch(status) {
       case "Approved": return "bg-green-100 text-green-800 border-green-200";
       case "Declined": return "bg-red-100 text-red-800 border-red-200";
-      case "Under Process": return "bg-blue-100 text-blue-800 border-blue-200"; // नया 'Under Process' कलर
+      case "Under Process": return "bg-blue-100 text-blue-800 border-blue-200";
       default: return "bg-yellow-100 text-yellow-800 border-yellow-200"; // Pending
     }
   };
@@ -194,7 +216,7 @@ export default function DashboardPage() {
                     </div>
                     
                     <div className="mt-4 flex justify-between items-center">
-                      <span className={`px-3 py-1 text-xs font-bold rounded-full border ${getStatusColor(hub.status)}`}>
+                      <span className={`px-3 py-1 text-xs font-bold rounded-full border transition-colors duration-500 ${getStatusColor(hub.status)}`}>
                         Status: {hub.status}
                       </span>
                     </div>
