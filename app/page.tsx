@@ -173,9 +173,9 @@ export default function Home() {
 
           {/* Dots Indicator */}
           <div className="flex justify-center items-center gap-2 mt-8">
-            <span className="w-2 h-2 rounded-full bg-gray-300"></span>
-            <span className="w-6 h-2 rounded-full bg-green-600"></span>
-            <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+           
+            <span className="w-full h-2 rounded-full bg-green-600"></span>
+        
           </div>
 
         </div>
