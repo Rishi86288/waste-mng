@@ -34,6 +34,9 @@ jobs:
             # डिपेंडेंसीज इंस्टॉल करना  
             npm install --legacy-peer-deps
             npm install @hcaptcha/react-hcaptcha --legacy-peer-deps
+            npm install @vis.gl/react-google-maps --legacy-peer-deps
+            npm install @googlemaps/markerclusterer --legacy-peer-deps
+            npm install -D @types/google.maps --legacy-peer-deps
             
             # प्रोजेक्ट बिल्ड करना (इस समय .env फाइल मौजूद है, तो नेक्स्ट इसे रीड कर लेगा)
             npm run build

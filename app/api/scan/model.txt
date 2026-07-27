@@ -162,3 +162,5 @@ Save checkpoints (last.pt) to Google Drive.
 Resume training across multiple sessions.
 Be patient, as free GPU availability and runtime limits vary.
 If you'd like, I can also provide a single Colab notebook with all the code cells already organized so you can run them one by one without needing to write any code yourself.
+npm install @vis.gl/react-google-maps @googlemaps/markerclusterer
+npm install -D @types/google.maps

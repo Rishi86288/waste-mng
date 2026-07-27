@@ -33,11 +33,46 @@ export default function DashboardPage() {
   const [myHubs, setMyHubs] = useState<HubData[]>([]);
   const [communityHubs, setCommunityHubs] = useState<HubData[]>([]); 
   
-  // डिफ़ॉल्ट हब्स
+  // डिफ़ॉल्ट हब्स (30 रियल इंडियन रीसाइक्लिंग सेंटर्स)
   const [pointsList, setPointsList] = useState<PointLocation[]>([
-    { id: 1, name: "Campus Main Gate Bin", address: "Gate 1, Campus", accepted_types: "Plastic, Paper" },
-    { id: 2, name: "Hostel Block A Center", address: "Near Canteen", accepted_types: "E-Waste, Glass" }
-  ]);
+   /* { id: 1, name: "Dharavi Plastic Recycling Zone", address: "Dharavi, Mumbai, Maharashtra", accepted_types: "Plastic, Polythene" },
+    { id: 2, name: "Kurla Scrap Market", address: "Kurla, Mumbai, Maharashtra", accepted_types: "Metal, Auto Scrap, E-Waste" },
+    { id: 3, name: "Deonar Waste Management", address: "Deonar, Mumbai, Maharashtra", accepted_types: "General Solid Waste" },
+    { id: 4, name: "Malad E-waste Dismantlers", address: "Malad, Mumbai, Maharashtra", accepted_types: "E-Waste, Electronics" },
+    { id: 5, name: "Vasai Industrial Recycling", address: "Vasai, Mumbai, Maharashtra", accepted_types: "Mixed Industrial Waste" },
+    
+    { id: 6, name: "Mayapuri Industrial Area", address: "Mayapuri, New Delhi", accepted_types: "Scrap Metal, Auto Parts" },
+    { id: 7, name: "Okhla Waste to Energy", address: "Okhla, New Delhi", accepted_types: "Organic, General Waste" },
+    { id: 8, name: "Seelampur E-Waste Hub", address: "Seelampur, New Delhi", accepted_types: "E-Waste, PCB Boards" },
+    { id: 9, name: "Bawana Recycling Area", address: "Bawana, New Delhi", accepted_types: "Plastic, Industrial Scrap" },
+    { id: 10, name: "Ghazipur Management Site", address: "Ghazipur, New Delhi", accepted_types: "Solid Waste" },
+    
+    { id: 11, name: "Peenya Industrial Area", address: "Peenya, Bangalore, Karnataka", accepted_types: "Metal, Machinery Scrap" },
+    { id: 12, name: "Nayandahalli Plastic Hub", address: "Nayandahalli, Bangalore, Karnataka", accepted_types: "Plastic, Polymers" },
+    { id: 13, name: "Bommasandra Recycling", address: "Bommasandra, Bangalore, Karnataka", accepted_types: "Industrial Waste" },
+    { id: 14, name: "Whitefield E-Waste Processors", address: "Whitefield, Bangalore, Karnataka", accepted_types: "E-Waste, IT Assets" },
+    { id: 15, name: "Kengeri Paper Recycling", address: "Kengeri, Bangalore, Karnataka", accepted_types: "Paper, Cardboard" },
+    
+    { id: 16, name: "Guindy Industrial Scrap", address: "Guindy, Chennai, Tamil Nadu", accepted_types: "Metal, E-Waste" },
+    { id: 17, name: "Ambattur Waste Processing", address: "Ambattur, Chennai, Tamil Nadu", accepted_types: "Auto Parts, Chemical Waste" },
+    { id: 18, name: "Perungudi Processing Zone", address: "Perungudi, Chennai, Tamil Nadu", accepted_types: "Solid Waste, Mixed" },
+    { id: 19, name: "Pallavaram Management", address: "Pallavaram, Chennai, Tamil Nadu", accepted_types: "General Waste" },
+    { id: 20, name: "Manali Industrial Recyclers", address: "Manali, Chennai, Tamil Nadu", accepted_types: "Chemical, Plastics" },
+    */
+    { id: 21, name: "Naroda Textile Recycling", address: "Naroda, Ahmedabad, Gujarat", accepted_types: "Textile, Fabric Scrap" },
+    { id: 22, name: "Vatva GIDC Recycling", address: "Vatva, Ahmedabad, Gujarat", accepted_types: "Chemical, Plastic" },
+    { id: 23, name: "Odhav GIDC Metal Hub", address: "Odhav, Ahmedabad, Gujarat", accepted_types: "Metal, Mixed Scrap" },
+    { id: 24, name: "Sarkhej Scrap Zone", address: "Sarkhej, Ahmedabad, Gujarat", accepted_types: "Paper, Plastic, Scrap" },
+    { id: 25, name: "Pirana Waste Site", address: "Pirana, Ahmedabad, Gujarat", accepted_types: "Solid Waste" },
+    /*
+    { id: 26, name: "Jeedimetla Industrial Hub", address: "Jeedimetla, Hyderabad, Telangana", accepted_types: "Chemical, E-Waste" },
+    { id: 27, name: "Balanagar Scrap Market", address: "Balanagar, Hyderabad, Telangana", accepted_types: "Metal, Auto Scrap" },
+    { id: 28, name: "Cherlapally Plastics", address: "Cherlapally, Hyderabad, Telangana", accepted_types: "Plastic, Mixed Scrap" },
+    
+    { id: 29, name: "Bhosari MIDC Scrap", address: "Pimpri-Chinchwad, Pune, Maharashtra", accepted_types: "Auto Parts, Metal" },
+    { id: 30, name: "Hadapsar Waste Hub", address: "Hadapsar, Pune, Maharashtra", accepted_types: "Mixed Industrial Waste" }
+ */
+ ]);
 
   // --- डेटा फेच करने का फंक्शन (ताकि इसे बार-बार कॉल किया जा सके) ---
   const fetchData = async () => {
@@ -140,8 +175,13 @@ export default function DashboardPage() {
           {/* 1. Official/Static Nearby Recycling Hubs */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-10">
             <div className="flex justify-between items-center mb-6 border-b pb-4">
-              <h3 className="text-xl font-bold text-gray-800">Nearby Recycling Hubs</h3>
-              <span className="text-sm text-green-600 font-semibold cursor-pointer hover:underline">View Map</span>
+              <h3 className="text-xl font-bold text-gray-800"> Recycling Hubs</h3>
+              
+              {/* यहाँ बदलाव किया गया है - View Map को लिंक बनाया गया है */}
+              <Link href="/recycling_centers" className="text-sm text-green-600 font-semibold cursor-pointer hover:underline">
+                View Map
+              </Link>
+              
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
