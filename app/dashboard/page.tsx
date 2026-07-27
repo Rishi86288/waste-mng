@@ -65,13 +65,13 @@ export default function DashboardPage() {
     { id: 24, name: "Sarkhej Scrap Zone", address: "Sarkhej, Ahmedabad, Gujarat", accepted_types: "Paper, Plastic, Scrap" },
     { id: 25, name: "Pirana Waste Site", address: "Pirana, Ahmedabad, Gujarat", accepted_types: "Solid Waste" },
     /*
-    { id: 26, name: "Jeedimetla Industrial Hub", address: "Jeedimetla, Hyderabad, Telangana", accepted_types: "Chemical, E-Waste" },
+    { id: 26, name: "Jeedimetla Industrial Hub ", address: "Jeedimetla, Hyderabad, Telangana", accepted_types: "Chemical, E-Waste" },
     { id: 27, name: "Balanagar Scrap Market", address: "Balanagar, Hyderabad, Telangana", accepted_types: "Metal, Auto Scrap" },
     { id: 28, name: "Cherlapally Plastics", address: "Cherlapally, Hyderabad, Telangana", accepted_types: "Plastic, Mixed Scrap" },
-    
+     
     { id: 29, name: "Bhosari MIDC Scrap", address: "Pimpri-Chinchwad, Pune, Maharashtra", accepted_types: "Auto Parts, Metal" },
     { id: 30, name: "Hadapsar Waste Hub", address: "Hadapsar, Pune, Maharashtra", accepted_types: "Mixed Industrial Waste" }
- */
+ */    
  ]);
 
   // --- डेटा फेच करने का फंक्शन (ताकि इसे बार-बार कॉल किया जा सके) ---
