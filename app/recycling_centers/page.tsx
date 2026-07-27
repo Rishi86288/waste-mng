@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef } from 'react';
+import {createRoot} from "react-dom/client";
 import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 
@@ -114,7 +115,7 @@ export default function FullMapPage() {
         <div className="bg-white p-2 rounded-2xl shadow-sm border border-gray-200">
           {/* मैप का साइज़ यहाँ से कंट्रोल होगा */}
           <div style={{ width: '100%', height: '75vh', borderRadius: '12px', overflow: 'hidden' }}>
-            <APIProvider apiKey={apiKey}>
+            <APIProvider apiKey={apiKey} onLoad={() => console.log('Maps API has loaded.')}>
               <Map
                defaultCenter={{ lat: 20.5937, lng: 78.9629 }} // India Center
                defaultZoom={5}
