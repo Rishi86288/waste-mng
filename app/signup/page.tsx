@@ -23,7 +23,7 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(""); // नया प्रयास करने पर पुराना एरर हटा दें  
+    setError(""); // नया प्रयास करने पर पुराना एरर हटा दें    
 
     try {
       // 1. Firebase में अकाउंट बनाना
