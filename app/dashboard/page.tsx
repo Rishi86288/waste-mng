@@ -125,7 +125,7 @@ export default function DashboardPage() {
 
   const displayName = dbName || user?.displayName || "User";
 
-  // स्टेटस के कलर्स
+  // स्टेटस के कलर्स  
   const getStatusColor = (status: string) => {
     switch(status) {
       case "Approved": return "bg-green-100 text-green-800 border-green-200";
